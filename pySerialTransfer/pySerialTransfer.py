@@ -524,7 +524,7 @@ class SerialTransfer:
 									  packet
 		"""
 
-		if self.open():
+		if self.connection.is_open:
 			if self.connection.in_waiting:
 				while self.connection.in_waiting:
 					recChar = int.from_bytes(self.connection.read(), byteorder='big')
