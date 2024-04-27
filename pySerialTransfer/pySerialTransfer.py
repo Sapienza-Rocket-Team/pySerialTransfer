@@ -10,16 +10,16 @@ from array import array
 from .CRC import CRC
 
 
-class InvalidSerialPort(Exception):
-	_ports: list[str]
+class InvalidSerialPort( Exception ):
+	_ports: list[ str ]
 	_port: str
 
-	def __init__( self, ports: list[str], port: str ) -> None:
+	def __init__( self, ports: list[ str ], port: str ) -> None:
 		super().__init__( f'Invalid serial port specified. Valid options are {ports}, but {port} was provided' )
 		self._ports = ports
 		self._port = port
 
-	def ports( self ) -> list[str]:
+	def ports( self ) -> list[ str ]:
 		return self._ports
 
 	def port( self ) -> str:
@@ -27,80 +27,79 @@ class InvalidSerialPort(Exception):
 
 
 class InvalidCallbackDict( Exception ):
-	def __init__(self) -> None:
-		super().__init__('Parameter "callbacks" is not of type "list"')
+	def __init__( self ) -> None:
+		super().__init__( 'Parameter "callbacks" is not of type "list"' )
 
 
-CONTINUE        =  3
-NEW_DATA        =  2
-NO_DATA         =  1
-CRC_ERROR       =  0
-PAYLOAD_ERROR   = -1
+CONTINUE = 3
+NEW_DATA = 2
+NO_DATA = 1
+CRC_ERROR = 0
+PAYLOAD_ERROR = -1
 STOP_BYTE_ERROR = -2
 
 START_BYTE = 0x7E
-STOP_BYTE  = 0x81
+STOP_BYTE = 0x81
 
 MAX_PACKET_SIZE = 0xFE
 
-BYTE_FORMATS = {'native':          '@',
-				'native_standard': '=',
-				'little-endian':   '<',
-				'big-endian':      '>',
-				'network':         '!'}
+BYTE_FORMATS = { 'native': '@',
+                 'native_standard': '=',
+                 'little-endian': '<',
+                 'big-endian': '>',
+                 'network': '!' }
 
-STRUCT_FORMAT_LENGTHS = {'c': 1,
-						 'b': 1,
-						 'B': 1,
-						 '?': 1,
-						 'h': 2,
-						 'H': 2,
-						 'i': 4,
-						 'I': 4,
-						 'l': 4,
-						 'L': 4,
-						 'q': 8,
-						 'Q': 8,
-						 'e': 2,
-						 'f': 4,
-						 'd': 8}
+STRUCT_FORMAT_LENGTHS = { 'c': 1,
+                          'b': 1,
+                          'B': 1,
+                          '?': 1,
+                          'h': 2,
+                          'H': 2,
+                          'i': 4,
+                          'I': 4,
+                          'l': 4,
+                          'L': 4,
+                          'q': 8,
+                          'Q': 8,
+                          'e': 2,
+                          'f': 4,
+                          'd': 8 }
 
-ARRAY_FORMAT_LENGTHS = {'b': 1,
-						'B': 1,
-						'u': 2,
-						'h': 2,
-						'H': 2,
-						'i': 2,
-						'I': 2,
-						'l': 4,
-						'q': 8,
-						'Q': 8,
-						'f': 4,
-						'd': 8}
+ARRAY_FORMAT_LENGTHS = { 'b': 1,
+                         'B': 1,
+                         'u': 2,
+                         'h': 2,
+                         'H': 2,
+                         'i': 2,
+                         'I': 2,
+                         'l': 4,
+                         'q': 8,
+                         'Q': 8,
+                         'f': 4,
+                         'd': 8 }
 
-
-find_start_byte    = 0
-find_id_byte       = 1
+find_start_byte = 0
+find_id_byte = 1
 find_overhead_byte = 2
-find_payload_len   = 3
-find_payload       = 4
-find_crc           = 5
-find_end_byte      = 6
+find_payload_len = 3
+find_payload = 4
+find_crc = 5
+find_end_byte = 6
 
 
-def msb(val: int) -> int:
-	return byte_val(val, num_bytes(val) - 1)
+def msb( val: int ) -> int:
+	return byte_val( val, num_bytes( val ) - 1 )
 
 
-def lsb(val: int) -> int:
-	return byte_val(val, 0)
+def lsb( val: int ) -> int:
+	return byte_val( val, 0 )
 
 
-def byte_val(val: int, pos: int) -> int:
-	return int.from_bytes(((val >> (pos * 8)) & 0xFF).to_bytes(2, 'big'), 'big')
+def byte_val( val: int, pos: int ) -> int:
+	return int.from_bytes( ((val >> (pos * 8)) & 0xFF).to_bytes( 2, 'big' ), 'big' )
 
 
-def num_bytes(val: int) -> int:
+def num_bytes( val: int ) -> int:
 	num_bits = val.bit_length()
 	num_bytes = num_bits // 8
 
@@ -113,7 +112,7 @@ def num_bytes(val: int) -> int:
 	return num_bytes
 
 
-def constrain(val: int, min_: int, max_: int) -> int:
+def constrain( val: int, min_: int, max_: int ) -> int:
 	if val < min_:
 		return min_
 	elif val > max_:
@@ -121,7 +120,7 @@ def constrain(val: int, min_: int, max_: int) -> int:
 	return val
 
 
-def open_ports() -> list[str]:
+def open_ports() -> list[ str ]:
 	"""
 	Description:
 	------------
@@ -129,27 +128,28 @@ def open_ports() -> list[str]:
 
 	:return port_list: list - all serial ports currently available
 	"""
-	port_list = []
+	port_list = [ ]
 
 	for port in serial_ports():
 		try:
-			s = serial.Serial(port)
+			s = serial.Serial( port )
 			s.close()
-			port_list.append(port)
+			port_list.append( port )
 		except (OSError, serial.SerialException):
 			pass
 
 	return port_list
 
 
-def serial_ports() -> list[str]:
-	return [p.device for p in serial.tools.list_ports.comports(include_links=True)]
+def serial_ports() -> list[ str ]:
+	return [ p.device for p in serial.tools.list_ports.comports( include_links=True ) ]
 
 
 class SerialTransfer:
 	_logger: logging.Logger
 
-	def __init__(self, port: str, baud: int = 115200, restrict_ports: bool = True, byte_format: str = BYTE_FORMATS['little-endian'], timeout: float = 0.05) -> None:
+	def __init__( self, port: str, baud: int = 115200, restrict_ports: bool = True,
+	              byte_format: str = BYTE_FORMATS[ 'little-endian' ], timeout: float = 0.05 ) -> None:
 		"""
 		Description:
 		------------
@@ -167,15 +167,15 @@ class SerialTransfer:
 		:return: void
 		"""
 
-		self.txBuff = [' ' for _ in range(MAX_PACKET_SIZE)]
-		self.rxBuff = [' ' for _ in range(MAX_PACKET_SIZE)]
+		self.txBuff = [ ' ' for _ in range( MAX_PACKET_SIZE ) ]
+		self.rxBuff = [ ' ' for _ in range( MAX_PACKET_SIZE ) ]
 
-		self.idByte       = 0
-		self.bytesRead    = 0
-		self.status       = 0
+		self.idByte = 0
+		self.bytesRead = 0
+		self.status = 0
 		self.overheadByte = 0xFF
-		self.callbacks    = {}
-		self.byte_format  = byte_format
+		self.callbacks = { }
+		self.byte_format = byte_format
 
 		self.state = find_start_byte
 
@@ -183,7 +183,7 @@ class SerialTransfer:
 			self.port_name = None
 			ports = serial_ports()
 			for p in ports:
-				if p == port or os.path.split(p)[-1] == port:
+				if p == port or os.path.split( p )[ -1 ] == port:
 					self.port_name = p
 					break
 
@@ -199,7 +199,7 @@ class SerialTransfer:
 		self.connection.timeout = timeout
 		self._logger = logging.getLogger( 'SerialTransfer' )
 
-	def open(self) -> None:
+	def open( self ) -> bool:
 		"""
 		Description:
 		------------
@@ -210,8 +210,11 @@ class SerialTransfer:
 
 		if not self.connection.is_open:
 			self.connection.open()
+			return self.connection.is_open
 
-	def set_callbacks(self, callbacks: dict[int, typing.Callable[[], None]]) -> None:
+		return True
+
+	def set_callbacks( self, callbacks: dict[ int, typing.Callable[[ ], None] ] ) -> None:
 		"""
 		Description:
 		------------
@@ -222,12 +225,12 @@ class SerialTransfer:
 		:return: void
 		"""
 
-		if not isinstance(callbacks, dict):
+		if not isinstance( callbacks, dict ):
 			raise InvalidCallbackDict()
 
 		self.callbacks = callbacks
 
-	def close(self) -> None:
+	def close( self ) -> None:
 		"""
 		Description:
 		------------
@@ -238,7 +241,7 @@ class SerialTransfer:
 		if self.connection.is_open:
 			self.connection.close()
 
-	def tx_obj(self, val: typing.Any, start_pos: int = 0, byte_format: str = '', val_type_override: str = '') -> int | None:
+	def tx_obj( self, val: typing.Any, start_pos: int = 0, byte_format: str = '', val_type_override: str = '' ) -> int | None:
 		"""
 		Description:
 		-----------
@@ -261,26 +264,26 @@ class SerialTransfer:
 			format_str = val_type_override
 
 		else:
-			if isinstance(val, str):
+			if isinstance( val, str ):
 				val = val.encode()
-				format_str = '%ds' % len(val)
+				format_str = '%ds' % len( val )
 
-			elif isinstance(val, dict):
-				val = json.dumps(val).encode()
-				format_str = '%ds' % len(val)
+			elif isinstance( val, dict ):
+				val = json.dumps( val ).encode()
+				format_str = '%ds' % len( val )
 
-			elif isinstance(val, float):
+			elif isinstance( val, float ):
 				format_str = 'f'
 
-			elif isinstance(val, int):
+			elif isinstance( val, int ):
 				format_str = 'i'
 
-			elif isinstance(val, bool):
+			elif isinstance( val, bool ):
 				format_str = '?'
 
-			elif isinstance(val, list):
+			elif isinstance( val, list ):
 				for el in val:
-					start_pos = self.tx_obj(el, start_pos)
+					start_pos = self.tx_obj( el, start_pos )
 
 				return start_pos
 
@@ -288,17 +291,17 @@ class SerialTransfer:
 				return None
 
 		if byte_format:
-			val_bytes = struct.pack(byte_format + format_str, val)
+			val_bytes = struct.pack( byte_format + format_str, val )
 
 		else:
 			if format_str == 'c':
-				val_bytes = struct.pack(self.byte_format + format_str, bytes(str(val), "utf-8"))
+				val_bytes = struct.pack( self.byte_format + format_str, bytes( str( val ), "utf-8" ) )
 			else:
-				val_bytes = struct.pack(self.byte_format + format_str, val)
+				val_bytes = struct.pack( self.byte_format + format_str, val )
 
-		return self.tx_struct_obj(val_bytes, start_pos)
+		return self.tx_struct_obj( val_bytes, start_pos )
 
-	def tx_struct_obj(self, val_bytes: bytearray, start_pos: int = 0) -> int:
+	def tx_struct_obj( self, val_bytes: bytearray, start_pos: int = 0 ) -> int:
 		"""
 		Description:
 		-----------
@@ -312,12 +315,13 @@ class SerialTransfer:
 					   None if operation failed
 		"""
 
-		for index in range(len(val_bytes)):
-			self.txBuff[index + start_pos] = val_bytes[index]
+		for index in range( len( val_bytes ) ):
+			self.txBuff[ index + start_pos ] = val_bytes[ index ]
 
-		return start_pos + len(val_bytes)
+		return start_pos + len( val_bytes )
 
-	def rx_obj(self, obj_type: type | str, start_pos: int = 0, obj_byte_size: int = 0, list_format: str | None = None, byte_format: str = '') -> typing.Any | None:
+	def rx_obj( self, obj_type: type | str, start_pos: int = 0, obj_byte_size: int = 0, list_format: str | None = None,
+	            byte_format: str = '' ) -> typing.Any | None:
 		"""
 		Description:
 		------------
@@ -344,53 +348,53 @@ class SerialTransfer:
 		"""
 
 		if (obj_type == str) or (obj_type == dict):
-			buff = bytes(self.rxBuff[start_pos:(start_pos + obj_byte_size)])
-			format_str = '%ds' % len(buff)
+			buff = bytes( self.rxBuff[ start_pos:(start_pos + obj_byte_size) ] )
+			format_str = '%ds' % len( buff )
 
 		elif obj_type == float:
 			format_str = 'f'
-			buff = bytes(self.rxBuff[start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[format_str])])
+			buff = bytes( self.rxBuff[ start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[ format_str ]) ] )
 
 		elif obj_type == int:
 			format_str = 'i'
-			buff = bytes(self.rxBuff[start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[format_str])])
+			buff = bytes( self.rxBuff[ start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[ format_str ]) ] )
 
 		elif obj_type == bool:
 			format_str = '?'
-			buff = bytes(self.rxBuff[start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[format_str])])
+			buff = bytes( self.rxBuff[ start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[ format_str ]) ] )
 
 		elif obj_type == list:
-			buff = bytes(self.rxBuff[start_pos:(start_pos + obj_byte_size)])
+			buff = bytes( self.rxBuff[ start_pos:(start_pos + obj_byte_size) ] )
 
 			if list_format:
-				arr = array(list_format, buff)
+				arr = array( list_format, buff )
 				return arr.tolist()
 
 			else:
 				return None
 
-		elif isinstance(obj_type, str):
-			buff = bytes(self.rxBuff[start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[obj_type])])
+		elif isinstance( obj_type, str ):
+			buff = bytes( self.rxBuff[ start_pos:(start_pos + STRUCT_FORMAT_LENGTHS[ obj_type ]) ] )
 			format_str = obj_type
 
 		else:
 			return None
 
 		if byte_format:
-			unpacked_response = struct.unpack(byte_format + format_str, buff)[0]
+			unpacked_response = struct.unpack( byte_format + format_str, buff )[ 0 ]
 
 		else:
-			unpacked_response = struct.unpack(self.byte_format + format_str, buff)[0]
+			unpacked_response = struct.unpack( self.byte_format + format_str, buff )[ 0 ]
 
 		if (obj_type == str) or (obj_type == dict):
-			unpacked_response = unpacked_response.decode('utf-8')
+			unpacked_response = unpacked_response.decode( 'utf-8' )
 
 		if obj_type == dict:
-			unpacked_response = json.loads(unpacked_response)
+			unpacked_response = json.loads( unpacked_response )
 
 		return unpacked_response
 
-	def calc_overhead(self, pay_len: int) -> None:
+	def calc_overhead( self, pay_len: int ) -> None:
 		"""
 		Description:
 		------------
@@ -406,12 +410,12 @@ class SerialTransfer:
 
 		self.overheadByte = 0xFF
 
-		for i in range(pay_len):
-			if self.txBuff[i] == START_BYTE:
+		for i in range( pay_len ):
+			if self.txBuff[ i ] == START_BYTE:
 				self.overheadByte = i
 				break
 
-	def find_last(self, pay_len: int) -> int:
+	def find_last( self, pay_len: int ) -> int:
 		"""
 		Description:
 		------------
@@ -425,12 +429,12 @@ class SerialTransfer:
 		"""
 
 		if pay_len <= MAX_PACKET_SIZE:
-			for i in range(pay_len - 1, -1, -1):
-				if self.txBuff[i] == START_BYTE:
+			for i in range( pay_len - 1, -1, -1 ):
+				if self.txBuff[ i ] == START_BYTE:
 					return i
 		return -1
 
-	def stuff_packet(self, pay_len: int) -> None:
+	def stuff_packet( self, pay_len: int ) -> None:
 		"""
 		Description:
 		------------
@@ -442,15 +446,15 @@ class SerialTransfer:
 		:return: void
 		"""
 
-		refByte = self.find_last(pay_len)
+		refByte = self.find_last( pay_len )
 
 		if (not refByte == -1) and (refByte <= MAX_PACKET_SIZE):
-			for i in range(pay_len - 1, -1, -1):
-				if self.txBuff[i] == START_BYTE:
-					self.txBuff[i] = refByte - i
+			for i in range( pay_len - 1, -1, -1 ):
+				if self.txBuff[ i ] == START_BYTE:
+					self.txBuff[ i ] = refByte - i
 					refByte = i
 
-	def send(self, message_len: int, packet_id: int = 0) -> None:
+	def send( self, message_len: int, packet_id: int = 0 ) -> None:
 		"""
 		Description:
 		------------
@@ -463,35 +467,35 @@ class SerialTransfer:
 		:return: void
 		"""
 
-		stack = []
-		message_len = constrain(message_len, 0, MAX_PACKET_SIZE)
+		stack = [ ]
+		message_len = constrain( message_len, 0, MAX_PACKET_SIZE )
 
-		self.calc_overhead(message_len)
-		self.stuff_packet(message_len)
-		found_checksum = self.crc.calculate(self.txBuff, message_len)
+		self.calc_overhead( message_len )
+		self.stuff_packet( message_len )
+		found_checksum = self.crc.calculate( self.txBuff, message_len )
 
-		stack.append(START_BYTE)
-		stack.append(packet_id)
-		stack.append(self.overheadByte)
-		stack.append(message_len)
+		stack.append( START_BYTE )
+		stack.append( packet_id )
+		stack.append( self.overheadByte )
+		stack.append( message_len )
 
-		for i in range(message_len):
-			if isinstance(self.txBuff[i], str):
-				val = ord(self.txBuff[i])
+		for i in range( message_len ):
+			if isinstance( self.txBuff[ i ], str ):
+				val = ord( self.txBuff[ i ] )
 			else:
-				val = int(self.txBuff[i])
+				val = int( self.txBuff[ i ] )
 
-			stack.append(val)
+			stack.append( val )
 
-		stack.append(found_checksum)
-		stack.append(STOP_BYTE)
+		stack.append( found_checksum )
+		stack.append( STOP_BYTE )
 
-		stack = bytearray(stack)
+		stack = bytearray( stack )
 
 		if self.open():
-			self.connection.write(stack)
+			self.connection.write( stack )
 
-	def unpack_packet(self, pay_len: int) -> None:
+	def unpack_packet( self, pay_len: int ) -> None:
 		"""
 		Description:
 		------------
@@ -506,14 +510,14 @@ class SerialTransfer:
 		delta = 0
 
 		if testIndex <= MAX_PACKET_SIZE:
-			while self.rxBuff[testIndex]:
-				delta = self.rxBuff[testIndex]
-				self.rxBuff[testIndex] = START_BYTE
+			while self.rxBuff[ testIndex ]:
+				delta = self.rxBuff[ testIndex ]
+				self.rxBuff[ testIndex ] = START_BYTE
 				testIndex += delta
 
-			self.rxBuff[testIndex] = START_BYTE
+			self.rxBuff[ testIndex ] = START_BYTE
 
-	def available(self) -> int:
+	def available( self ) -> int:
 		"""
 		Description:
 		------------
@@ -527,7 +531,7 @@ class SerialTransfer:
 		if self.connection.is_open:
 			if self.connection.in_waiting:
 				while self.connection.in_waiting:
-					recChar = int.from_bytes(self.connection.read(), byteorder='big')
+					recChar = int.from_bytes( self.connection.read(), byteorder='big' )
 
 					if self.state == find_start_byte:
 						if recChar == START_BYTE:
@@ -554,16 +558,16 @@ class SerialTransfer:
 
 					elif self.state == find_payload:
 						if self.payIndex < self.bytesToRec:
-							self.rxBuff[self.payIndex] = recChar
+							self.rxBuff[ self.payIndex ] = recChar
 							self.payIndex += 1
 
 							# Try to receive as many more bytes as we can, but we might not get all of them
 							# if there is a timeout from the OS
 							if self.payIndex != self.bytesToRec:
-								moreBytes = list(self.connection.read(self.bytesToRec - self.payIndex))
-								nextIndex = self.payIndex + len(moreBytes)
+								moreBytes = list( self.connection.read( self.bytesToRec - self.payIndex ) )
+								nextIndex = self.payIndex + len( moreBytes )
 
-								self.rxBuff[self.payIndex:nextIndex] = moreBytes
+								self.rxBuff[ self.payIndex:nextIndex ] = moreBytes
 								self.payIndex = nextIndex
 
 							if self.payIndex == self.bytesToRec:
@@ -571,7 +575,7 @@ class SerialTransfer:
 
 					elif self.state == find_crc:
 						found_checksum = self.crc.calculate(
-							self.rxBuff, self.bytesToRec)
+							self.rxBuff, self.bytesToRec )
 
 						if found_checksum == recChar:
 							self.state = find_end_byte
@@ -585,7 +589,7 @@ class SerialTransfer:
 						self.state = find_start_byte
 
 						if recChar == STOP_BYTE:
-							self.unpack_packet(self.bytesToRec)
+							self.unpack_packet( self.bytesToRec )
 							self.bytesRead = self.bytesToRec
 							self.status = NEW_DATA
 							return self.bytesRead
@@ -597,7 +601,7 @@ class SerialTransfer:
 					else:
 						self.bytesRead = 0
 						self.state = find_start_byte
-						raise RuntimeError(f'Undefined state: {self.state}')
+						raise RuntimeError( f'Undefined state: {self.state}' )
 			else:
 				self.bytesRead = 0
 				self.status = NO_DATA
@@ -607,7 +611,7 @@ class SerialTransfer:
 		self.status = CONTINUE
 		return self.bytesRead
 
-	def tick(self) -> int:
+	def tick( self ) -> int:
 		"""
 		Description:
 		------------
@@ -619,9 +623,9 @@ class SerialTransfer:
 
 		if self.available():
 			if self.idByte in self.callbacks:
-				self.callbacks[self.idByte]()
+				self.callbacks[ self.idByte ]()
 			else:
-				self._logger.warning(f'No callback available for packet ID {self.idByte}')
+				self._logger.warning( f'No callback available for packet ID {self.idByte}' )
 			return CONTINUE
 
 		return self.status
