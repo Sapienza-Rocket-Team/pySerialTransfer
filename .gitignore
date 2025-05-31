@@ -1,5 +1,5 @@
-.venv
-*.egg-info
-.idea
-.vscode
-.mypy
+.venv/
+*.egg-info/
+.idea/
+.vscode/
+.mypy/
