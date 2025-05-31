@@ -1,9 +1,9 @@
 class CRC:
 	def __init__(self, polynomial: int = 0x9B, crc_len: int = 8) -> None:
-		self.poly      = polynomial & 0xFF
-		self.crc_len   = crc_len
+		self.poly = polynomial & 0xFF
+		self.crc_len = crc_len
 		self.table_len = pow(2, crc_len)
-		self.cs_table  = [0 for _ in range(self.table_len)]
+		self.cs_table = [0 for _ in range(self.table_len)]
 
 		self.generate_table()
 
@@ -30,23 +30,19 @@ class CRC:
 				buffer += '\n'
 		print( buffer )
 
-	def calculate(self, arr: list[str] | int, dist: int | None = None) -> int:
+	def calculate(self, arr: list[int] | int, dist: int | None = None) -> int:
 		crc = 0
 
 		if isinstance( arr, list ):
-			indicies = dist or len(arr)
+			indices = dist or len(arr)
 
-			for i in range(indicies):
-				try:
-					nex_el = int(arr[i])
-				except ValueError:
-					nex_el = ord(arr[i])
-
+			for i in range( indices ):
+				nex_el = arr[i]
 				crc = self.cs_table[crc ^ nex_el]
 		elif isinstance( arr, int ):
 			crc = self.cs_table[arr]  # FIXME: ???
 		else:
-			raise TypeError( f'Invalid parameter `arr` type: expected `list[str]`, found `{type(arr)}`' )
+			raise TypeError( f'Invalid parameter `arr` type: expected `list[int]`, found `{type(arr)}`' )
 
 		return crc
 

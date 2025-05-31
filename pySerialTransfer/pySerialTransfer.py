@@ -147,9 +147,17 @@ def serial_ports() -> list[ str ]:
 
 class SerialTransfer:
 	_logger: logging.Logger
+	txBuff: list[ int ]
+	rxBuff: list[ int ]
+	idByte: int
+	bytesRead: int
+	status: int
+	overheadByte: int
+	callbacks: dict[ int, typing.Callable[ [ ], None ] ]
+	byte_format: str
+	state: int
 
-	def __init__( self, port: str, baud: int = 115200, restrict_ports: bool = True,
-	              byte_format: str = BYTE_FORMATS[ 'little-endian' ], timeout: float = 0.05 ) -> None:
+	def __init__( self, port: str, baud: int = 115200, restrict_ports: bool = True, byte_format: str = BYTE_FORMATS[ 'little-endian' ], timeout: float = 0.05 ) -> None:
 		"""
 		Description:
 		------------
@@ -157,10 +165,8 @@ class SerialTransfer:
 
 		:param port: str            - port the USB device is connected to
 		:param baud: int            - baud (bits per sec) the device is configured for
-		:param restrict_ports: bool - only allow port selection from auto
-									  detected list
-		:param byte_format:    str  - format for values packed/unpacked via the
-									  struct package as defined by
+		:param restrict_ports: bool - only allow port selection from auto-detected list
+		:param byte_format:    str  - format for values packed/unpacked via the struct package as defined by
 									  https://docs.python.org/3/library/struct.html#struct-format-strings
 		:param timeout:       float - timeout (in s) to set on pySerial for maximum wait for a read from the OS
 									  default 50ms marries up with DEFAULT_TIMEOUT in SerialTransfer
@@ -214,7 +220,7 @@ class SerialTransfer:
 
 		return True
 
-	def set_callbacks( self, callbacks: dict[ int, typing.Callable[[ ], None] ] ) -> None:
+	def set_callbacks( self, callbacks: dict[ int, typing.Callable[ [ ], None ] ] ) -> None:
 		"""
 		Description:
 		------------
@@ -320,8 +326,7 @@ class SerialTransfer:
 
 		return start_pos + len( val_bytes )
 
-	def rx_obj( self, obj_type: type | str, start_pos: int = 0, obj_byte_size: int = 0, list_format: str | None = None,
-	            byte_format: str = '' ) -> typing.Any | None:
+	def rx_obj( self, obj_type: type | str, start_pos: int = 0, obj_byte_size: int = 0, list_format: str | None = None, byte_format: str = '' ) -> typing.Any | None:
 		"""
 		Description:
 		------------
@@ -483,7 +488,7 @@ class SerialTransfer:
 			if isinstance( self.txBuff[ i ], str ):
 				val = ord( self.txBuff[ i ] )
 			else:
-				val = int( self.txBuff[ i ] )
+				val = self.txBuff[ i ]
 
 			stack.append( val )
 
